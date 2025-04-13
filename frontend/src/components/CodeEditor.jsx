@@ -1,227 +1,265 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { toast } from "react-hot-toast";
-import { Play, Trash2, Settings } from "lucide-react";
-import { FaPython, FaJsSquare, FaJava } from "react-icons/fa"; // Add language icons
+import { Play, Trash2, Settings, Menu, X } from "lucide-react";
+import { FaPython, FaJsSquare, FaJava } from "react-icons/fa";
 import { SiC, SiCplusplus } from "react-icons/si";
-
-
-import { AxiosInstance } from "../lib/axios"
+import { AxiosInstance } from "../lib/axios";
 import { codeStore } from "../store/codeStore";
 
-
 const CodeEditor = ({ onCodeEditorSettingsClick }) => {
-
   const { selectedLanguage, setLanguage } = codeStore();
-
   const [code, setCode] = useState("// Write your code here...");
-  const [userInput, setUserInput] = useState("")
+  const [userInput, setUserInput] = useState("");
   const [output, setOutput] = useState("");
   const [error, setError] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleRunCode = async () => {
     try {
-      const response = await AxiosInstance.post('/execute/code', { language: selectedLanguage, code, userInput });
-      // console.log(response.data);
+      const response = await AxiosInstance.post('/execute/code', { 
+        language: selectedLanguage, 
+        code, 
+        userInput 
+      });
+      
       if (response.data.output.trim()) {
         setOutput(response.data.output);
         setError(false);
-        toast.success("Code executed successfully!", {
-          duration: 2000, // Toast disappears after 2 seconds
-        });
+        toast.success("Code executed successfully!", { duration: 2000 });
       } else {
         setOutput(response.data.error);
         setError(true);
-        toast.error("Execution error!", {
-          duration: 2000, // Toast disappears after 2 seconds
-        });
+        toast.error("Execution error!", { duration: 2000 });
       }
     } catch (err) {
       setOutput("Error executing code");
       setError(true);
-      toast.error("Something went wrong", {
-        duration: 2000, // Toast disappears after 2 seconds
-      });
+      toast.error("Something went wrong", { duration: 2000 });
     }
   };
+
   const handleEditorDidMount = (editor, monaco) => {
-    // Define custom theme
-    monaco.editor.defineTheme("my-custom-theme", {
-      base: "vs-dark", // Base theme: "vs", "vs-dark", "hc-black"
-      inherit: true, // Inherit from base theme
+    monaco.editor.defineTheme("carmine-theme", {
+      base: "vs-dark",
+      inherit: true,
       rules: [
-        { token: "comment", foreground: "A5F3FC", fontStyle: "italic" },
-        { token: "keyword", foreground: "00bcd4", fontStyle: "bold" },
+        { token: "comment", foreground: "FF5A5F", fontStyle: "italic" },
+        { token: "keyword", foreground: "D72638", fontStyle: "bold" },
         { token: "string", foreground: "CE9178" },
       ],
       colors: {
         "editor.background": "#18181b",
+        "editor.foreground": "#ffffff",
         "editor.lineHighlightBackground": "#333333",
         "editor.selectionBackground": "#264f78",
-        "editorCursor.foreground": "#ffffff", // Cursor color should apply now!
+        "editorCursor.foreground": "#ffffff",
       },
     });
 
-    // Set the custom theme
-    monaco.editor.setTheme("my-custom-theme");
+    monaco.editor.setTheme("carmine-theme");
+    editor.updateOptions({
+      fontSize: 13,
+      minimap: { enabled: false },
+      wordWrap: "on",
+      automaticLayout: true,
+      lineNumbers: "on",
+    });
   };
 
   const languages = [
-    { name: "cpp", icon: <SiCplusplus className={`text-2xl ${selectedLanguage === "cpp" ? "text-white" : "text-cyan-300"}`} /> },
-    { name: "c", icon: <SiC className={`text-2xl ${selectedLanguage === "c" ? "text-white" : "text-cyan-300"}`} /> },
-    { name: "java", icon: <FaJava className={`text-2xl ${selectedLanguage === "java" ? "text-white" : "text-cyan-300"}`} /> },
-    { name: "python", icon: <FaPython className={`text-2xl ${selectedLanguage === "python" ? "text-white" : "text-cyan-300"}`} /> },
-    { name: "javascript", icon: <FaJsSquare className={`text-2xl ${selectedLanguage === "javascript" ? "text-white" : "text-cyan-300"}`} /> },
+    { name: "cpp", icon: <SiCplusplus className="text-2xl" /> },
+    { name: "c", icon: <SiC className="text-2xl" /> },
+    { name: "java", icon: <FaJava className="text-2xl" /> },
+    { name: "python", icon: <FaPython className="text-2xl" /> },
+    { name: "javascript", icon: <FaJsSquare className="text-2xl" /> },
   ];
 
-
-
-
   return (
+    <div className="font-raleway h-screen w-full bg-zinc-900 text-white flex flex-col md:flex-row overflow-hidden">
 
-    <div className=" font-[raleway] h-screen w-full bg-black text-white p-6 flex flex-col  md:flex-row  space-x-2 ">
-
-      {/* Left */}
-      <div className="h-[80%] flex flex-col justify-center items-center">
-        {languages.map((language) => (
-          <div
-            key={language.name}
-            onClick={() => setLanguage(language.name)}
-            className={`group relative w-12 h-12 p-4 flex items-center justify-center mb-6 transition-all cursor-pointer border border-white/10  rounded-lg 
-        ${selectedLanguage === language.name
-                ? "text-white shadow-xl border-amber-600 ring-2 ring-cyan-400 transition-all duration-200 ease-out"
-                : "bg-black text-cyan-300 hover:text-white hover:shadow-lg transform scale-90 transition-all duration-200 ease-out"}
-      `}
-            style={{ zIndex: 1 }}
-          >
-            <span className="rounded flex items-center justify-center">
-              {language.icon}
-            </span>
-            {/* Tooltip */}
-            <div
-              className="absolute top-1/2 left-full ml-2 -translate-y-1/2 hidden group-hover:flex px-3 py-1 text-xs font-medium text-white bg-cyan-500 rounded-lg shadow-md whitespace-nowrap transition-all duration-200"
-              style={{ zIndex: 1000 }}
+      {/* Sidebar */}
+      {/* <div className={`${isMobile ? 'fixed inset-y-0 left-0 z-50 w-16 transform' : 'flex'} 
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        md:translate-x-0 md:relative md:w-auto transition-transform duration-300 ease-in-out `}>
+        <div className="h-full ml-2 mt-[4rem] flex flex-col items-center space-y-4 p-2 bg-[#18191A] md:bg-[#0000000] rounded-r-lg md:rounded-lg overflow-y-auto  ">
+          {languages.map((language) => (
+            <button
+              key={language.name}
+              onClick={() => {
+                setLanguage(language.name);
+                if (isMobile) setIsMobileSidebarOpen(false);
+              }}
+              className={`relative group w-12 h-12 flex z-20 items-center justify-center rounded-lg border-2 transition-all
+                ${selectedLanguage === language.name 
+                  ? "border-[#D72638] bg-[#7A0000] text-white shadow-lg z-20" 
+                  : "border-[#5C0000] bg-[#990000] text-[#FFCCCB] hover:bg-[#7A0000] hover:text-white z-20"}
+              `}
             >
-              {language.name}
+              {language.icon}
+              <div className="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-white bg-[#D72638] rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
+                {language.name}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div> */}
+      <div className={`${isMobile ? 'fixed inset-y-0 left-0 z-[100] w-20' : 'flex z-[100]'} 
+    ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+    md:translate-x-0 md:relative md:w-auto transition-transform duration-300 ease-in-out`}
+>
+    <div className="h-full ml-2 mt-[4rem] flex flex-col items-center space-y-4 p-2 bg-[#18191A] md:bg-[#0000000] rounded-r-lg md:rounded-lg overflow-visible">
+        {languages.map((language) => (
+            <div key={language.name} className="relative group" style={{ zIndex: 100 }}>
+                <button
+                    onClick={() => {
+                        setLanguage(language.name);
+                        if (isMobile) setIsMobileSidebarOpen(false);
+                    }}
+                    className={`w-12 h-12 flex items-center justify-center rounded-lg border-2 transition-all
+                        ${selectedLanguage === language.name 
+                            ? "border-[#D72638] bg-[#7A0000] text-white shadow-lg" 
+                            : "border-[#5C0000] bg-[#990000] text-[#FFCCCB] hover:bg-[#7A0000] hover:text-white"}
+                    `}
+                >
+                    {language.icon}
+                </button>
+                {/* Tooltip with guaranteed visibility */}
+                <div className="absolute left-full ml-3 px-3 py-1
+                               text-xs font-medium text-white bg-[#D72638] 
+                               rounded-md shadow-lg opacity-0 group-hover:opacity-100 
+                               transition-opacity duration-200 whitespace-nowrap 
+                               z-[9999] pointer-events-none"
+                     style={{
+                         transform: 'translateY(-50%)',
+                         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                         minWidth: 'max-content'
+                     }}>
+                    {language.name}
+                    {/* Tooltip arrow */}
+                    <div className="absolute right-full top-1/2 transform -translate-y-1/2
+                                  w-0 h-0 border-t-[6px] border-t-transparent 
+                                  border-b-[6px] border-b-transparent border-r-[6px] border-r-[#D72638]">
+                    </div>
+                </div>
             </div>
-          </div>
         ))}
-      </div>
-
-      {/* Mid */}
-      <div className=" w-[50%] h-[80%] flex  sm:flex-col  gap-4 ">
-
-
-        <div className="w-[100%] flex flex-col justify-end  sm:flex-row ">
-
-
-          <button
-            onClick={handleRunCode}
-            className="cursor-pointer relative   bg-cyan-900   px-4 py-2 overflow-hidden font-bold rounded-full group">
-            <span className="w-32 h-32 rotate-45 translate-x-12 -translate-y-2 absolute left-0 top-0 bg-white opacity-[3%]"></span>
-            <span className="absolute top-0 left-0 w-48 h-48 -mt-1 transition-all duration-500 ease-in-out rotate-45 -translate-x-56 -translate-y-24 bg-white opacity-100 group-hover:-translate-x-8"></span>
-            <span className="flex items-center gap-2 relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-gray-900"> <Play size={16} /> Run</span>
-            <span className="absolute inset-0 rounded-full"></span>
-          </button>
+    </div>
+</div>
+      
 
 
 
-        </div>
 
 
-        <div className=" h-full overflow-clip  border-white/60 border-[1.5px] ">
-          <MonacoEditor
-            height="100%"
-            language={selectedLanguage}
-            value={code}
-            onChange={(newValue) => setCode(newValue)}
-            theme="my-custom-theme"
-            onMount={handleEditorDidMount}
-            options={{
-              fontSize: 13,
-              minimap: { enabled: false }, // Disable the minimap
-              wordWrap: "on",
-              automaticLayout: true,
-              lineNumbers: "on",
-              scrollbar: {
-                vertical: "hidden",
-                horizontal: "hidden",
-                alwaysConsumeMouseWheel: true,
-              },
-            }}
-          />
-        </div>
+      {/* Overlay for mobile sidebar */}
+      {/* {isMobileSidebarOpen && isMobile && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        ></div>
+      )} */}
 
-
-
-      </div>
-
-      {/* Right */}
-      <div className=" w-[50%]  h-[80%]  flex   sm:flex-col  gap-2">
-        <div className="w-[100%] flex flex-col  sm:flex-row ">
-
-          <button
-            onClick={onCodeEditorSettingsClick}
-            className="cursor-pointer relative bg-cyan-900 mb-2 px-4 py-2 overflow-hidden font-bold rounded-full group">
-            <span className="w-32 h-32 rotate-45 translate-x-12 -translate-y-2 absolute left-0 top-0 bg-white opacity-[3%]"></span>
-            <span className="absolute top-0 left-0 w-48 h-48 -mt-1 transition-all duration-500 ease-in-out rotate-45 -translate-x-56 -translate-y-24 bg-white opacity-100 group-hover:-translate-x-8"></span>
-            <span className="flex items-center gap-2 relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-gray-900"><Settings size={16} /> Settings</span>
-            <span className="absolute inset-0rounded-full"></span>
-          </button>
-        </div>
-
-
-        <div className=" h-[50%] flex flex-col  ">
-          <div className="px-3 py-2 h-full border-white/60 border-[1.5px] bg-zinc-900 overflow-hidden">
-            <h2 className="text-sm font-semibold text-white flex  items-center gap-2">
-              Input: <span className="text-sm text-zinc-400 mt-0.5">(optional)</span>
-            </h2>
-            <hr className="mt-2" />
-            <textarea
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              className="w-full h-full p-3 bg-transparent  text-white border-none outline-none resize-none overflow-auto"
-              placeholder="Enter your runtime input here..."
-            ></textarea>
-          </div>
-        </div>
-
-
-
-        <div className=" h-[50%] flex flex-col  ">
-          <div className="flex-1 px-3 py-2  border-white/60 border-[1.5px] bg-zinc-900 overflow-auto">
-            <div className="flex justify-between">
-              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-                Output:
-              </h2>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col p-2 md:p-4 overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden">
+          {/* Code Editor */}
+          <div className="flex-1 flex flex-col gap-2 overflow-hidden">
+            <div className="flex gap-2">
               <button
-                onClick={() => {
-                  setOutput("");
-                  toast.success("Terminal cleared!", { duration: 2000 });
-                }}
-                className="text-[14px] font-semibold flex items-center gap-2 bg-zinc-800 text-white px-2 py-1 rounded-md hover:bg-zinc-700 w-full sm:w-auto focus:ring-2 focus:ring-cyan-400  "
+                onClick={handleRunCode}
+                className="button-54 flex items-center gap-2"
               >
-                <Trash2 size={14} /> Clear
+                <Play size={16} /> Run
               </button>
             </div>
-            <hr className="mt-2" />
-            <pre
-              className={`mt-2 mb-2 p-3 rounded-md text-sm font-mono whitespace-pre-wrap break-words max-h-80 overflow-auto transition-all duration-300 ${error ? "bg-red-800 text-red-100" : "bg-cyan-700 text-whit  e"
-                }`}
-            >
-              {output || "No output yet..."}
-            </pre>
+            
+            <div className="flex-1 mt-2 border-2 border-zinc-600 rounded-lg overflow-hidden">
+              <MonacoEditor
+                height="100%"
+                language={selectedLanguage}
+                value={code}
+                onChange={(newValue) => setCode(newValue)}
+                theme="carmine-theme"
+                onMount={handleEditorDidMount}
+                options={{
+                  fontSize: 13,
+                  minimap: { enabled: false },
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  lineNumbers: "on",
+                }}
+              />
+            </div>
+          </div>
 
+          {/* Input/Output Section */}
+          <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+            <div className="flex gap-2">
+              <button
+                onClick={onCodeEditorSettingsClick}
+                className="button-54 flex items-center gap-2"
+              >
+                <Settings size={16} /> Settings
+              </button>
+            </div>
 
+            <div className="flex-1 flex flex-col gap-4 overflow-auto">
+              {/* Input */}
+              <div className="flex-1 flex flex-col border-2 border-zinc-600 rounded-lg overflow-hidden bg-zinc-800">
+                <div className="p-2 bg-zinc-700 border-b border-zinc-600">
+                  <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    Input: <span className="text-xs text-zinc-400">(optional)</span>
+                  </h2>
+                </div>
+                <textarea
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  className="flex-1 w-full p-3 bg-transparent text-white outline-none resize-none"
+                  placeholder="Enter your runtime input here..."
+                />
+              </div>
+
+              {/* Output */}
+              <div className="flex-1 flex flex-col border-2 border-zinc-600 rounded-lg overflow-hidden bg-zinc-800">
+                <div className="p-2 bg-zinc-700 border-b border-zinc-600 flex justify-between items-center">
+                  <h2 className="text-sm font-semibold text-white">Output:</h2>
+                  <button
+                    onClick={() => {
+                      setOutput("");
+                      toast.success("Terminal cleared!", { duration: 2000 });
+                    }}
+                    className="button-54 flex items-center gap-2 text-xs px-2 py-1"
+                    >
+                    <Trash2 size={14} /> Clear
+                  </button>
+                </div>
+                <pre
+                  className={`flex-1 p-3 overflow-auto font-mono text-sm whitespace-pre-wrap break-words ${
+                    error ? "bg-red-900/50 text-red-100" : "bg-cyan-900/20 text-white"
+                  }`}
+                >
+                  {output || "No output yet..."}
+                </pre>
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
-    
     </div>
-
-
   );
 };
 
