@@ -1,65 +1,130 @@
-# CodeX - Online Code Editor Platform
 
-![CodeX Dashboard](./screenshots/dashboard.png)
+# CodeX - Online Code Execution Platform
 
-## Table of Contents
-- [Features](#features)
-- [Technologies](#technologies)
-- [Setup Instructions](#setup-instructions)
-- [Environment Variables](#environment-variables)
-- [Running the Application](#running-the-application)
-- [Screenshots](#screenshots)
-- [Project Structure](#project-structure)
-- [API Endpoints](#api-endpoints)
-- [License](#license)
 
-## Features
+## 📸 Application Screenshots
 
-- **Multi-language Support**: JavaScript, Python, Java, C, C++
-- **Real-time Code Execution**: See results instantly
-- **User Authentication**: Secure login/signup system
-- **Profile Management**: View and edit your profile
-- **Responsive Design**: Works on all devices
-- **Syntax Highlighting**: Clean code visualization
-- **Error Handling**: Clear execution feedback
+### 1. Executing Code Sucessfully
+![Login Page](./assets/run.png)
 
-## Technologies
+### 2. Proper Error Handling
+![Dashboard](./assets/error.png)
 
-### Frontend
-- React.js (v18+)
-- Monaco Editor (VS Code editor)
-- Tailwind CSS (v3+)
-- React Icons
-- Axios for API calls
 
-### Backend
-- Node.js (v16+)
-- Express.js
-- MongoDB (with Mongoose)
-- JWT Authentication
-- CORS middleware
+## 🛠️ Setup Instructions
 
-## Setup Instructions
+### 1. Prerequisites
+- Node.js v16+
+- npm v8+
+- MongoDB Atlas account
+- Git
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm (v8 or higher)
-- MongoDB Atlas account or local MongoDB
-
-### Installation
-
-1. Clone the repository:
+### 2. Clone and Install
 ```bash
+# Clone repository
 git clone https://github.com/yourusername/codex.git
 cd codex
 
+# Install backend dependencies
 cd backend
 npm install
 
+# Install frontend dependencies
 cd ../frontend
 npm install
+```
 
+### 3. Environment Configuration
+
+#### Backend Configuration:
+1. Navigate to backend directory:
+```bash
+cd backend
+```
+
+2. Create `.env` file:
+```bash
+touch .env
+```
+
+3. Open the `.env` file and add:
+```env
 PORT=7878
-MONGO_URI=your_mongodb_connection_string
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.example.mongodb.net/codex?retryWrites=true&w=majority
 NODE_ENV=development
-JWT_SECRET_KEY=your_secure_jwt_secret
+JWT_SECRET_KEY=your_secure_random_jwt_secret_here
+```
+
+4. Replace placeholders:
+- `<username>`: Your MongoDB username
+- `<password>`: Your MongoDB password
+- `your_secure_random_jwt_secret_here`: Generate a strong secret key (min 32 chars)
+
+#### Frontend Configuration (Optional):
+Edit `frontend/src/config.js` if you need to change API base URL:
+```javascript
+export const API_BASE_URL = 'http://localhost:7878';
+```
+
+### 4. Running the Application
+
+#### Start Backend Server:
+```bash
+cd backend
+npm start
+```
+Expected output:
+```
+Server running on port 7878
+MongoDB Connected
+```
+
+#### Start Frontend Development Server (in new terminal):
+```bash
+cd frontend
+npm run dev
+```
+Expected output:
+```
+  Vite v4.0.0 ready in 500 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
+```
+
+#### Access the Application:
+Open your browser and visit:
+```
+http://localhost:3000
+```
+
+## 🚨 Troubleshooting
+1. **MongoDB Connection Issues**:
+   - Verify your connection string format
+   - Check network access in MongoDB Atlas
+   - Test connection with MongoDB Compass
+
+2. **Port Conflicts**:
+   ```bash
+   # Find process using port 7878
+   sudo lsof -i :7878
+   
+   # Kill the process (if needed)
+   kill -9 <PID>
+   ```
+
+3. **Dependency Errors**:
+   ```bash
+   # In both backend and frontend directories:
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+4. **Environment Variables Not Loading**:
+   - Ensure `.env` is in backend root
+   - Restart server after changes
+   - Never commit `.env` to git
+
+## 📜 License
+MIT License - See [LICENSE](LICENSE) for details.
+```
