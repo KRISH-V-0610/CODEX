@@ -20,13 +20,22 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://codex-krish.vercel.app'
+];
+
 app.use(cookieParser())
-app.use(cors(
-  {
-    origin: 'https://codex-krish.vercel.app',
-    credentials: true, // Allow credentials (cookies) to be sent
-  }
-))
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
+  credentials: true,
+}));
 
 app.get('/', (req, res) => {
   res.send('API is running...')
