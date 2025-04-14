@@ -14,8 +14,8 @@ export const useAuthStore = create((set) => ({
     try {
       set({ isCheckingAuth: true })
       console.log("In checkAuth")
-      console.log("Cookies received:", req.cookies);
-
+      console.log("Cookies received:");
+      console.log(document.cookie); // Log the cookies to see if they are being sent
       const response = await AxiosInstance.get('/auth/check-auth');
       console.log("Response from checkAuth",response.data)
       set({ authUser: response.data })
