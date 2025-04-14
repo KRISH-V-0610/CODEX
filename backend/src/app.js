@@ -23,9 +23,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.use(cors(
   {
-    origin: "https://codex-krish.vercel.app/",
+    origin: 'https://codex-krish.vercel.app',
     credentials: true, // Allow credentials (cookies) to be sent
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   }
 ))
 
