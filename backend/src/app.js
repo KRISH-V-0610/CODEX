@@ -21,10 +21,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser())
-app.use(cors({
-  origin: 'https://codex-frontend-roan.vercel.app/',
-  credentials: true, // Enable Set-Cookie headers.
-}))
+app.use(cors())
 
 
 
