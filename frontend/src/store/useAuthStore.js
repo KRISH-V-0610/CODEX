@@ -21,7 +21,7 @@ export const useAuthStore = create((set) => ({
       set({ authUser: response.data })
 
     } catch (error) {
-      // console.log("Error in useAuthStore.js checking Auth", error.message)
+      console.log("Error in useAuthStore.js checking Auth", error.message)
       set({ authUser: null })
 
     } finally {
