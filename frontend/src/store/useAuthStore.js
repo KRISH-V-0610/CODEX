@@ -12,10 +12,10 @@ export const useAuthStore = create((set) => ({
 
   checkAuth: async () => {  
     try {
+      set({ isCheckingAuth: true })
       console.log("In checkAuth")
       console.log("Cookies received:", req.cookies);
 
-      set({ isCheckingAuth: true })
       const response = await AxiosInstance.get('/auth/check-auth');
       console.log("Response from checkAuth",response.data)
       set({ authUser: response.data })
