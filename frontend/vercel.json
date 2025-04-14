@@ -8,18 +8,11 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "headers": {
-        "Cache-Control": "no-store"
-      },
-      "dest": "index.html"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
-  "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist"
 }
